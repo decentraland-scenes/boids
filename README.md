@@ -1,6 +1,6 @@
-# Boids JS
+# Boids
 
-Boids JS is an implementation of the boids algorithm. This can be used for simulation flock behavior such as birds or fish in 3D space.  It uses a grid implementation for fast lookups. 
+Boids is an implementation of the boids algorithm. This can be used for simulation flock behavior such as birds or fish in 3D space.  It uses a grid implementation for fast lookups. 
 
 # Class Overview
 
