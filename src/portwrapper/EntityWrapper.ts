@@ -4,33 +4,30 @@
 export class EntityWrapper {
   entity: Entity
 
+
   constructor(entity?: Entity) {
     if(entity !== undefined){
       this.entity = entity
     }else{
-      this.entity = new Entity()
+      this.entity = EntityWrapper.createEntity()
     }
   }
 
-  /*
-  getComponent<T extends EcsType = EcsType<any>>(comp: ComponentDefinition<T>): ComponentType<T> {
-    return this.getComponentM(comp)
-  }
-
-  getComponentM<T extends EcsType = EcsType<any>>(comp: ComponentDefinition<T>): ComponentType<T> {
-    return comp.mutable(this.entity)
-  }
-  getComponentR<T extends EcsType = EcsType<any>>(comp: ComponentDefinition<T>): DeepReadonly<ComponentType<T>> {
-    return comp.getFrom(this.entity)
-  }
-  addComponent<T extends EcsType = EcsType<any>>(comp: ComponentDefinition<T>, val?: ComponentType<T>) {
-    return comp.create(this.entity, val)
-  }
-  */
-
   
-  addComponent<T extends object>(component: T): T{
-    return this.entity.addComponent(component)
+  static createEntity(){
+    const ent = new Entity()
+    engine.addEntity(ent)
+    return ent
+  }
+
+  withCollisions(val:boolean){
+    //default is off i think and dont want them on so turning off in sdk7???
+    if(this.hasComponent_String("engine.shape")){
+      this.getComponent_String("engine.shape").withCollisions = val
+    }
+  }
+  setParent(parent: Entity){
+    this.entity.setParent(parent)
   }
   //getComponent<T = any>(component: string): T;
   hasComponent<T>(component: ComponentConstructor<T>): boolean{
@@ -55,7 +52,53 @@ export class EntityWrapper {
   getComponentM<T>(component: ComponentConstructor<T>): T{
     return this.entity.getComponent(component)
   }
+  addComponent<T extends object>(component: ComponentConstructor<T>,args?:any):T {
+    return this.entity.addComponent(new component(args))
+  }
   isAlive(){
     return this.entity.alive
   }
+
+  /*
+
+  static createEntity(){
+    return engine.addEntity()
+  }
+  
+  withCollisions(val:boolean){
+    //default is off i think and dont want them on so turning off in sdk7???
+    //if(this.entity.hasComponent_String("engine.shape")){
+    //  this.entity.getComponent_String("engine.shape").withCollisions = val
+    //}
+  }
+  setParent(parent: Entity){
+    Transform.getMutable(this.entity).parent = parent
+  }
+  getComponent<T extends ISchema = ISchema<any>>(comp: ComponentDefinition<T>): ComponentType<T> {
+    return this.getComponentM(comp)
+  }
+
+  getComponentM<T extends ISchema = ISchema<any>>(comp: ComponentDefinition<T>): ComponentType<T> {
+    return comp.getMutable(this.entity)
+  }
+  getComponentR<T extends ISchema = ISchema<any>>(comp: ComponentDefinition<T>): DeepReadonly<ComponentType<T>> {
+    return comp.get(this.entity)
+  }
+  addComponent<T extends ISchema = ISchema<any>>(comp: ComponentDefinition<T>, val?: ComponentType<T>) {
+    return comp.create(this.entity, val)
+  }
+  
+  hasComponent<T extends ISchema = ISchema<any>>(comp: ComponentDefinition<T>) {
+    return comp.has(this.entity)
+  }
+  
+  isAlive(){
+    //engine.
+    //engine.add
+    return true
+  }
+*/
+  
+
+  
 }

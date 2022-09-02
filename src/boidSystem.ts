@@ -8,6 +8,11 @@ import { CommonResources } from "./resources/common"
 import { IntervalUtil } from "./utils/interval-util"
 import { EntityWrapper } from "./portwrapper/EntityWrapper"
 import IBoidEntity from "./boids/IBoidEntity"
+import { QuaternionWrapper } from "./portwrapper/Quaternion3Wrapper"
+import { Vector3Wrapper } from "./portwrapper/Vector3Wrapper"
+import { EngineWrapper } from "./portwrapper/EngineWrapper"
+import { CameraWrapper } from "./portwrapper/CameraWrapper"
+import { TransformWrapper } from "./portwrapper/TransformWrapper"
 
 type ExtPredatorEntity={
   boid:BoidEntity
@@ -15,17 +20,16 @@ type ExtPredatorEntity={
 }
 
 function setShapeCollisions(entity:EntityWrapper,val:boolean){
-  if(entity.hasComponent_String("engine.shape")){
-    entity.getComponent_String("engine.shape").withCollisions = val
-  }
+  entity.withCollisions(val)
+  
 }
 function scaleInPlace(entity:EntityWrapper,val:number){
   if(entity.hasComponent(Transform)){
-    entity.getComponent(Transform).scale.scaleInPlace(val)
+    Vector3Wrapper.scaleInPlace(entity.getComponent(Transform).scale,val,entity.getComponent(Transform).scale)
   }
 }
 
-export class BoidSystem implements ISystem{
+export class BoidSystem  {
 
   // this group will contain every entity that has a Transform component
   //group = engine.getComponentGroup(Transform)
@@ -40,6 +44,8 @@ export class BoidSystem implements ISystem{
   externalEntities:ExtPredatorEntity[] = []
   
   boidInterval:IntervalUtil
+  
+  systemFnCache!:(dt:number)=>void
 
   constructor (controller:BoidsController,interval:number){
     this.controller = controller
@@ -154,6 +160,18 @@ export class BoidSystem implements ISystem{
     }
   }
 
+  
+  createUpdateFn(){
+    if(this.systemFnCache === undefined){
+      log("createUpdateFn",this)
+      this.systemFnCache = (dt:number)=>{
+        //log("createUpdateFn called",this)
+        this.update(dt)
+      }
+    }
+    return this.systemFnCache
+  }
+
   update(dt: number) {
     if(this.controller ){//&& this.controller.enabled){
       if(this.boidInterval.update(dt)){
@@ -161,21 +179,26 @@ export class BoidSystem implements ISystem{
   
         const feet = - 1.3
         const head = 0
-        for( let playerEnt of this.playerEntities){
-          if(playerEnt && playerEnt.enabled){
-            this.controller.grid?.moveEntity(playerEnt, Camera.instance.position.x, Camera.instance.position.y-head , Camera.instance.position.z);
-            
-            //const flocation = new Vector3(this.playerFish.x,this.playerFish.y,this.playerFish.z)
-            const transform = playerEnt.visibleEntity.entity.getComponent(Transform)
-            transform.position.x = playerEnt.x
-            transform.position.y = playerEnt.y // + REGISTRY.boidController!.boundaryYOffset
-            transform.position.z = playerEnt.z
+        const cameraPos = CameraWrapper.getPositionOrNull()
+        if(cameraPos !== undefined && cameraPos !== null ){
+          for( let playerEnt of this.playerEntities){
+            if(playerEnt && playerEnt.enabled){
+              this.controller.grid?.moveEntity(playerEnt, cameraPos.x, cameraPos.y-head , cameraPos.z);
+              
+              //const flocation = new Vector3(this.playerFish.x,this.playerFish.y,this.playerFish.z)
+              const transform = playerEnt.visibleEntity.entity.getComponent(Transform)
+              transform.position.x = playerEnt.x
+              transform.position.y = playerEnt.y // + REGISTRY.boidController!.boundaryYOffset
+              transform.position.z = playerEnt.z
+            }
           }
+        }else{
+          log("WARN missing camera data",cameraPos)
         }
         for( let extEnt of this.externalEntities){
           if(extEnt && extEnt.boid.enabled){
              
-            const sdkEnttransform = extEnt.entity.getComponent(Transform)
+            const sdkEnttransform = TransformWrapper.get(extEnt.entity)//.getComponent(Transform)
             
             this.controller.grid?.moveEntity(extEnt.boid, sdkEnttransform.position.x, sdkEnttransform.position.y , sdkEnttransform.position.z);
               
@@ -214,17 +237,18 @@ export class BoidSystem implements ISystem{
     } 
     const moveDt = dt !== undefined ? dt*2 : 1
     const transform = boid.visibleEntity.entity.getComponent(Transform)
+    
+    const flocation = new Vector3Wrapper(boid.x,boid.y+ REGISTRY.boidController!.boundaryYOffset,boid.z)
+    const direction = flocation.subtract(transform.position )
+    const lookRot = QuaternionWrapper.LookRotation(direction)
 
-    const flocation = new Vector3(boid.x,boid.y+ REGISTRY.boidController!.boundaryYOffset,boid.z)
-    const direction = flocation.subtract( transform.position )
-    const lookRot = Quaternion.LookRotation(direction)
-
-    const moveVec = Vector3.Lerp( transform.position, flocation, moveDt)
+    
+    const moveVec = Vector3Wrapper.Lerp( transform.position, flocation, moveDt)
     //const rotQ = Quaternion.Slerp( fish.entity.getComponent(Transform).rotation, fish., dt)
     
-    transform.position.copyFrom(moveVec)
+    Vector3Wrapper.copyFrom(transform.position,moveVec)
 
-    transform.rotation = Quaternion.Slerp( transform.rotation, lookRot, 1 )
+    transform.rotation = QuaternionWrapper.Slerp( transform.rotation, lookRot, 1 )
     //transform.lookAt( new Vector3().copyFrom(fish.location) )//.rotate( new Vector3(1,1,1),90 )
     //fish.entity.getComponent(Transform).rotation.copyFrom(rotQ)
   }
@@ -261,5 +285,5 @@ export function initBoidSystem(){
   
 export function startBoidSystem(){
   if(!REGISTRY.boidSystem) throw new Error("REGISTRY.boidSystem must be initalized!!!")
-  engine.addSystem(REGISTRY.boidSystem)
+  EngineWrapper.addSystem(REGISTRY.boidSystem)
 }

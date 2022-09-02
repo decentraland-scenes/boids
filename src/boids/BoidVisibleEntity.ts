@@ -1,19 +1,22 @@
 import { EntityWrapper } from 'src/portwrapper/EntityWrapper.js';
 import { CommonResources } from 'src/resources/common.js';
+import { QuaternionWrapper } from '../portwrapper/Quaternion3Wrapper.js';
+import { TransformWrapper } from '../portwrapper/TransformWrapper.js';
+import { Vector3Wrapper } from '../portwrapper/Vector3Wrapper.js';
 //import BoidEntity from './BoidEntity.js';
 import { BOID_CONFIG } from './Constants.js';
 import Grid from "./Grid";
 import IBoidEntity, { BoidTypeEnum } from './IBoidEntity.js';
 import IBoidVisibleEntity from './IBoidVisibleEntity.js';
 
-export const fishConeShape = new ConeShape()
-fishConeShape.withCollisions = false
+export const fishConeShape =  ConeShape//CylinderShape////CylinderShape //// is gone? /
+//fishConeShape.withCollisions = false
 
-export const fishBoxShape = new BoxShape()
-fishBoxShape.withCollisions = false
+export const fishBoxShape =  BoxShape
+//fishBoxShape.withCollisions = false
  
-export const objsSphere = new SphereShape()
- objsSphere.withCollisions = false
+export const objsSphere =  SphereShape
+ //objsSphere.withCollisions = false
 
 export const fishShapes:GLTFShape[] =
 [
@@ -22,9 +25,9 @@ export const fishShapes:GLTFShape[] =
   new GLTFShape("models/Fish_04/Fish_04.glb")
 ]
 
-for(const p in fishShapes){
-  fishShapes[p].withCollisions = false
-}
+//for(const p in fishShapes){
+//  fishShapes[p].withCollisions = false
+//}
 
 
 /**
@@ -57,33 +60,44 @@ export default class BoidVisibleEntity implements IBoidVisibleEntity {
 
     initEntity(){
         const type = this.boid.type
-        const parent = new Entity("fish-p-"+this.boid.id)
+        const parent = new EntityWrapper()//"fish-p-"+this.boid.id)
         //parent.addComponent(fishShape)
-        parent.addComponent(new Transform(
-        {
-            position:new Vector3(1,1,1)
-            //,scale: new Vector3(this.mass/2,this.mass/2,this.mass).scale(FISH_MASS_SIZE_SCALE) 
-        }
-        ))
+        parent.addComponent(Transform,
+            {
+                position:new Vector3Wrapper(1,1,1)
+                ,scale: Vector3Wrapper.One()
+                ,rotation: QuaternionWrapper.Zero()
+            }
+        )
         
-        this.entity = new EntityWrapper(parent)
+        this.entity = parent;//new EntityWrapper(parent)
 
         
-        const child = new Entity("fish-"+this.boid.id)
-
-        child.addComponent(new Transform( {
-            scale: Vector3.One()
-        } ))
+        const child = new EntityWrapper()//new Entity("fish-"+this.boid.id)
+            
+        child.addComponent(Transform,
+            {
+                position:Vector3Wrapper.Zero()
+                ,scale: Vector3Wrapper.One()
+                ,rotation: QuaternionWrapper.Zero()
+                ,parent: parent.entity
+            }
+        )
         
 
         if(type == BoidTypeEnum.FLOCK_ENTITY){
-
-            child.getComponent(Transform).rotate(new Vector3(0,1,0),-90)
-            child.getComponent(Transform).rotate(new Vector3(1,0,0),90)
-
+            //FIXME NEED THIS
+            //Vector3.rotate()
+            child.getComponent(Transform).rotation = QuaternionWrapper.Euler(90,-90,0)
+            //child.getComponent(Transform).rotate(new Vector3(0,1,0),-90)
+            //child.getComponent(Transform).rotate(new Vector3(1,0,0),90)
+ 
             //as fish
-            child.addComponent(fishShapes[ Math.floor(Math.random()*fishShapes.length) ])
-            
+            child.entity.addComponent(fishShapes[ Math.floor(Math.random()*fishShapes.length) ])
+            /*GLTFShape.create(child.entity,{
+                src:fishShapes[ Math.floor(Math.random()*fishShapes.length) ]
+            })*/
+              
             //as particles 
             
             //sphere particles
@@ -97,23 +111,30 @@ export default class BoidVisibleEntity implements IBoidVisibleEntity {
         }else if(type == BoidTypeEnum.PREDATOR_ENTITY){
             if(BOID_CONFIG.VISIBLE_PREDATOR) {
                 child.addComponent(fishConeShape)
+                /*fishConeShape.create(child.entity,{
+                    radiusTop:0 //new way to make cone
+                })*/
 
-                child.getComponent(Transform).rotate(new Vector3(1,1,1),90)
-                child.getComponent(Transform).scale.scaleInPlace(.3)
+                //child.getComponent(Transform).rotate(new Vector3(1,1,1),90)
+                Vector3Wrapper.scaleInPlace( child.getComponent(Transform).scale,.3,child.getComponent(Transform).scale)
 
                 //child.addComponent(CommonResources.RESOURCES.materials.transparent)
             }
         }else if(type == BoidTypeEnum.SEEK_ENTITY){
             if(BOID_CONFIG.VISIBLE_SEEK) {
-                child.addComponent(new BoxShape())
+                child.addComponent(BoxShape)
+                //BoxShape.create(child.entity)
 
-                child.getComponent(Transform).rotate(new Vector3(1,1,1),90)
-                child.getComponent(Transform).scale.scaleInPlace(.2)
+                
+                
+                //child.getComponent(Transform).rotate(new Vector3(1,1,1),90)
+                Vector3Wrapper.scaleInPlace( child.getComponent(Transform).scale,.2,child.getComponent(Transform).scale)
                 //child.addComponent(CommonResources.RESOURCES.materials.transparent)
             }
         }else if(type == BoidTypeEnum.OBSTACLE_ENTITY){
             if(BOID_CONFIG.VISIBLE_OBSTACLES) {
-                child.addComponentOrReplace(objsSphere)
+                //objsSphere.createOrReplace(child.entity)
+                child.entity.addComponentOrReplace(new objsSphere())
                 //child.addComponent(CommonResources.RESOURCES.materials.transparent)
             }
             log("adding child obs")
@@ -122,11 +143,11 @@ export default class BoidVisibleEntity implements IBoidVisibleEntity {
         }
         
         
-        child.setParent(parent)
+        child.setParent(parent.entity) //HOW DO WE DO PARENTING
+        
+        this.modelEntity = child//new EntityWrapper(child)
 
-        this.modelEntity = new EntityWrapper(child)
-
-        engine.addEntity(parent) 
+        //engine.addEntity(parent) 
         
     }
 }
