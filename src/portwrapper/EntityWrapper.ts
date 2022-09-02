@@ -4,8 +4,12 @@
 export class EntityWrapper {
   entity: Entity
 
-  constructor(entity: Entity) {
-    this.entity = entity
+  constructor(entity?: Entity) {
+    if(entity !== undefined){
+      this.entity = entity
+    }else{
+      this.entity = new Entity()
+    }
   }
 
   /*
@@ -25,6 +29,9 @@ export class EntityWrapper {
   */
 
   
+  addComponent<T extends object>(component: T): T{
+    return this.entity.addComponent(component)
+  }
   //getComponent<T = any>(component: string): T;
   hasComponent<T>(component: ComponentConstructor<T>): boolean{
     return this.entity.hasComponent(component)

@@ -1,4 +1,5 @@
 import { CONFIG } from "src/config"
+import { EntityWrapper } from "src/portwrapper/EntityWrapper"
 import { REGISTRY } from "src/registry"
 import BoidsController from "./BoidsController"
 import { BOID_CONFIG } from "./Constants"
@@ -37,21 +38,21 @@ export function createBoundaryPlanes(){
     log("createBoundaryPlanes is disabled SHOW_DEBUG_BOUNDARY_PLANES")
     return
   }
-  const boundaryTopEnt = new Entity()
+  const boundaryTopEnt = new EntityWrapper()
   boundaryTopEnt.addComponent(boundaryEdgeShape)
   boundaryTopEnt.addComponent(new Transform( 
     {position: new Vector3(width/2,height+heightBottomOffset,depth/2),scale:new Vector3(width,depth,1),rotation:Quaternion.Euler(90,0,0)}
     
     ))
-  engine.addEntity(boundaryTopEnt)
+  engine.addEntity(boundaryTopEnt.entity)
 
-  const boundaryBottomEnt = new Entity()
+  const boundaryBottomEnt = new EntityWrapper()
   boundaryBottomEnt.addComponent(boundaryEdgeShape)
   boundaryBottomEnt.addComponent(new Transform( 
     {position: new Vector3(width/2,heightBottomOffset,depth/2),scale:new Vector3(width,depth,1),rotation:Quaternion.Euler(90,0,0)}
     
     ))
-  engine.addEntity(boundaryBottomEnt)
+  engine.addEntity(boundaryBottomEnt.entity)
 }
 
 export function createBoundaryMarkers(){
@@ -64,7 +65,7 @@ export function createBoundaryMarkers(){
   
   for(let x=0;x<=width;x+=parcelSize){
     for(let z=0;z<=depth;z+=parcelSize){
-        const boundaryEnt = new Entity()
+        const boundaryEnt = new EntityWrapper()
         boundaryEnt.addComponent(new CylinderShape())
         boundaryEnt.addComponent(new Transform( {position: new Vector3(x+offset,1,z+offset),scale:new Vector3(.3,1,.3)} ))
 
@@ -83,15 +84,15 @@ export function createBoundaryMarkers(){
   
   for(let x=0;x<=cellRowCount;x+=1){
     for(let z=0;z<=cellRowCount;z+=1){
-        const boundaryEnt = new Entity()
+        const boundaryEnt = new EntityWrapper()
         boundaryEnt.addComponent(boundarMarkerShape)
         boundaryEnt.addComponent(new Transform( {position: new Vector3((x*cellSize)+offset,height/2 + heightBottomOffset,(cellSize*z)+offset),scale:new Vector3(.1,height/2,.1)} ))
 
-        engine.addEntity(boundaryEnt)
+        engine.addEntity(boundaryEnt.entity)
     }
   }
 /*
-  const floorEnt = new Entity()
+  const floorEnt = new EntityWrapper()
   boundaryEnt.addComponent(boundarMarkerShape)
   boundaryEnt.addComponent(new Transform( {position: new Vector3((x*cellSize)+offset,1,(cellSize*z)+offset),scale:new Vector3(.1,1,.1)} ))
 
@@ -140,7 +141,7 @@ export function initBoidController() {
     //sea.fish.l
     //seaTest.start(64)
 
-    const seaCube = new Entity()
+    const seaCube = new EntityWrapper()
     seaCube.addComponent(new Transform({
         position: new Vector3(width, 2, depth),
         scale: new Vector3(width, height, depth)

@@ -7,7 +7,6 @@ INVISIBLE_MATERIAL.alphaTest = 1
 
 const MATERIAL_CACHE:Record<string,ObservableComponent> = {}
 const GLTF_CACHE:Record<string,GLTFShape> = {}
-const FONT_CACHE:Record<string,Font> = {}
 
 
 export class CommonResources {
@@ -85,52 +84,4 @@ export function getOrCreateMaterial(color:Color3,transparent:boolean):Observable
     }
   }
   return materialComp;
-}
-
-export function getColorFromString(strColor:string,theDefault:Color3){
- 
-  let color:Color3 = theDefault;
-  if(strColor!==null&&strColor!==undefined){
-    if(strColor?.indexOf("#")==0){
-      color = Color3.FromHexString(strColor)
-    }else{
-      switch(strColor?.toLowerCase()){
-        case 'white': color = Color3.White(); break;
-        case 'black': color = Color3.Black(); break;
-        case 'blue': color = Color3.Blue(); break;
-        case 'green': color = Color3.Green(); break;
-        case 'red': color = Color3.Red(); break;
-        case 'yellow': color = Color3.Yellow(); break;
-        case 'purple': color = Color3.Purple(); break;
-        case 'magenta': color = Color3.Magenta(); break;
-        case 'gray': color = Color3.Gray(); break;
-        case 'teal': color = Color3.Teal(); break;
-      }
-    }
-  }
-  //log("getColorFromString " + strColor + ";->" + color)
-  return color;
-}
-
-
-export function getOrCreateFont(textFont:string):Font{
-  let font = FONT_CACHE[textFont];
-  if(!font){
-    switch (textFont) {
-      case 'SF':
-      case 'SanFrancisco':
-        font = new Font(Fonts.SanFrancisco)
-        break
-      case 'SF_Heavy': 
-      case 'SanFrancisco_Heavy':
-        font = new Font(Fonts.SanFrancisco_Heavy)
-        break
-      case 'LibSans':
-      case 'LiberationSans':
-        font = new Font(Fonts.LiberationSans)
-        break
-    }
-    FONT_CACHE[textFont] = font
-  }
-  return font
 }

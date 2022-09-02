@@ -7,27 +7,6 @@ import IBoidVisibleEntity from './IBoidVisibleEntity.js';
 
 let idCounter = 0;
 
-export const fishConeShape = new ConeShape()
-fishConeShape.withCollisions = false
-
-export const fishBoxShape = new BoxShape()
-fishBoxShape.withCollisions = false
-
-export const objsSphere = new SphereShape()
- objsSphere.withCollisions = false
-
-export const fishShapes:GLTFShape[] =
-[
-  new GLTFShape("models/Fish_01/Fish_01.glb"),
-  new GLTFShape("models/Fish_03/Fish_03.glb"),
-  new GLTFShape("models/Fish_04/Fish_04.glb")
-]
-
-for(const p in fishShapes){
-  fishShapes[p].withCollisions = false
-}
-
-
 /**
  * @module BoidEntity 
  * Entity class defines an entitiy model which has a position and a velocity.
