@@ -1,5 +1,8 @@
 # Boids
 
+![demo](./images/scene-thumbnail.png)
+
+
 Boids is an implementation of the boids algorithm. This can be used for simulation flock behavior such as birds or fish in 3D space.  It uses a grid implementation for fast lookups. 
 
 # Class Overview
