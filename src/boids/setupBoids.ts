@@ -27,11 +27,11 @@ const predatorCount = 0
 const seekCount = 0
 
 
-const boundaryEdgeShape = PlaneShape
-//boundaryEdgeShape.withCollisions = false
+const boundaryEdgeShape = new PlaneShape()
+boundaryEdgeShape.withCollisions = false
 
-const boundarMarkerShape = CylinderShape
-//boundarMarkerShape.withCollisions = false
+const boundarMarkerShape = new CylinderShape()
+boundarMarkerShape.withCollisions = false
 
 export function createBoundaryPlanes(){
 
@@ -48,7 +48,7 @@ export function createBoundaryPlanes(){
     ,rotation:Quaternion.Euler(90,0,0)}
     
     ))
-  //engine.addEntity(boundaryTopEnt)
+  engine.addEntity(boundaryTopEnt)
 
   const boundaryBottomEnt = new Entity()
   boundaryBottomEnt.addComponent(boundaryEdgeShape)
@@ -58,7 +58,7 @@ export function createBoundaryPlanes(){
     ,rotation:Quaternion.Euler(90,0,0)}
     
     ))
-  //engine.addEntity(boundaryBottomEnt)
+  engine.addEntity(boundaryBottomEnt)
 }
 
 export function createBoundaryMarkers(){
