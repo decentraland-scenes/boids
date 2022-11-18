@@ -98,7 +98,7 @@ export function createBoundaryMarkers(){
           ,rotation:Quaternion.Zero()
         } ))
 
-        //engine.addEntity(boundaryEnt)
+        engine.addEntity(boundaryEnt)
     }
   }
 /*
