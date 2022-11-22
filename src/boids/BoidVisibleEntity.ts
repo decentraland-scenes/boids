@@ -38,6 +38,7 @@ export default class BoidVisibleEntity implements IBoidVisibleEntity {
     boid:IBoidEntity
     entity!:Entity
     modelEntity!:Entity
+    initAlready:boolean = false
     //maxEntitySpeed?:number
     /**
      * Constructor for the Entity class
@@ -58,6 +59,13 @@ export default class BoidVisibleEntity implements IBoidVisibleEntity {
     }
 
     initEntity(){
+        log("initEntity",this.boid.id)
+        if(this.initAlready){
+            log("initEntity",this.boid.id,"already init, skippping")
+            return;
+        }
+        this.initAlready = true
+      
         const type = this.boid.type
         const parent = new Entity()//"fish-p-"+this.boid.id)
         //parent.addComponent(fishShape)
